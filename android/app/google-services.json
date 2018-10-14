@@ -1,0 +1,42 @@
+{
+  "project_info": {
+    "project_number": "99975343335",
+    "firebase_url": "https://up4-project.firebaseio.com",
+    "project_id": "up4-project",
+    "storage_bucket": "up4-project.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:99975343335:android:744674ab4e121d74",
+        "android_client_info": {
+          "package_name": "chatleap.up4"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "99975343335-cegekgpcss66lq2tfe4hhq5kt75pdtov.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDl4nIwoTm4aLMHMBh1N38BZeTHZu8Hud8"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 1,
+          "other_platform_oauth_client": []
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
