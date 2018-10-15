@@ -10,33 +10,30 @@ class ChatMessage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      margin: EdgeInsets.symmetric(vertical: 8.0),
-      child: Row(
+      margin: EdgeInsets.symmetric(vertical: 4.0),
+      constraints: BoxConstraints(
+        maxWidth: MediaQuery.of(context).size.width - 48,
+      ),
+      decoration: BoxDecoration(
+        color: Colors.grey.withOpacity(0.2),
+        borderRadius: BorderRadius.only(
+          bottomLeft: Radius.circular(8.0),
+          bottomRight: Radius.circular(8.0),
+          topRight: Radius.circular(8.0),
+        ),
+      ),
+      padding: EdgeInsets.all(8.0),
+      child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[
-          Container(
-            padding: EdgeInsets.only(right: 8.0),
-            child: Text(
-              sender.isEmpty ? '???' : sender,
+          Text(
+            sender.isEmpty ? 'Unknown' : sender,
+            style: TextStyle(
+              fontSize: 10.0,
+              color: Theme.of(context).primaryColor,
             ),
           ),
-          Container(
-            constraints: BoxConstraints(
-              maxWidth: MediaQuery.of(context).size.width - 48,
-            ),
-            decoration: BoxDecoration(
-              color: Colors.grey,
-              borderRadius: BorderRadius.only(
-                bottomLeft: Radius.circular(8.0),
-                bottomRight: Radius.circular(8.0),
-                topRight: Radius.circular(8.0),
-              ),
-            ),
-            padding: EdgeInsets.all(8.0),
-            child: Text(
-              message
-            ),
-          ),
+          Text(message),
         ],
       ),
     );
