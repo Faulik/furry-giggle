@@ -1,11 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 
 import 'package:up4/chat/chatMessagesList.dart';
 import 'package:up4/chat/chatInput.dart';
-
-import 'package:up4/userBloc.dart';
 
 class Chat extends StatefulWidget {
   final String channelId;
@@ -18,7 +15,6 @@ class Chat extends StatefulWidget {
 
 class _ChatState extends State<Chat> {
   final String channelId;
-  final FirebaseUser user = User().user;
   CollectionReference thread;
 
   _ChatState({this.channelId}) {
@@ -41,11 +37,6 @@ class _ChatState extends State<Chat> {
             child: ChatMessagesList(channelId: channelId),
           ),
           Container(
-            decoration: BoxDecoration(
-              border: BorderDirectional(
-                top: BorderSide(color: Colors.grey, width: 1.0),
-              ),
-            ),
             child: ChatInput(
               thread: thread,
             ),

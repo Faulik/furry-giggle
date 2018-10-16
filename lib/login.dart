@@ -19,16 +19,18 @@ class _LoginState extends State<Login> {
       appBar: AppBar(
         title: Text('Your Phone Number'),
       ),
-      body: Column(
-        children: <Widget>[
-          Container(
-            margin: EdgeInsets.all(30.0),
-            child: currentVerificationId.isEmpty
-                ? buildPhoneInput(context)
-                : buildPhoneCodeInput(context),
-          )
-        ],
-      ),
+      body: Builder(builder: (BuildContext context) {
+        return Column(
+          children: <Widget>[
+            Container(
+              margin: EdgeInsets.all(30.0),
+              child: currentVerificationId.isEmpty
+                  ? buildPhoneInput(context)
+                  : buildPhoneCodeInput(context),
+            )
+          ],
+        );
+      }),
     );
   }
 
@@ -42,6 +44,9 @@ class _LoginState extends State<Login> {
             'Please confirm your country code and enter your phone number',
           ),
           TextFormField(
+            decoration: InputDecoration(
+              labelText: 'Phone number',
+            ),
             autovalidate: true,
             validator: (String value) {
               if (value.length < 13) {
@@ -50,9 +55,7 @@ class _LoginState extends State<Login> {
 
               return null;
             },
-            onFieldSubmitted: (value) {
-              handlePhoneSubmit(value, context);
-            },
+            onFieldSubmitted: (value) => handlePhoneSubmit(value, context),
             keyboardType: TextInputType.phone,
           )
         ],

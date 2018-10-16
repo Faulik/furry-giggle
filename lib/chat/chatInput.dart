@@ -16,76 +16,104 @@ class ChatInput extends StatefulWidget {
 
 class _ChatInputState extends State<ChatInput> {
   final TextEditingController _textController = TextEditingController();
-  final FirebaseUser user = User().user;
   final CollectionReference thread;
 
   _ChatInputState({this.thread});
 
   @override
   Widget build(BuildContext context) {
-    return Row(
+    return Stack(
       children: <Widget>[
-        Expanded(
-          child: Container(
-            margin: EdgeInsets.symmetric(
-              horizontal: 8.0,
-            ),
-            child: Stack(
-              alignment: Alignment(0.0, 0.0),
-              children: <Widget>[
-                TextField(
-                  controller: _textController,
-                  decoration: InputDecoration(
-                    contentPadding: EdgeInsets.symmetric(
-                      vertical: 8.0,
-                      horizontal: 16.0,
-                    ),
-                    hintText: 'Send a message',
-                  ),
-                  onSubmitted: (_) => handlePressSendMessage(context),
-                ),
-                profileOverlay(context),
-              ],
-            ),
-          ),
-        ),
         Container(
-          margin: EdgeInsets.only(
-            right: 8.0,
-          ),
-          child: RaisedButton(
-            color: Theme.of(context).primaryColor,
-            onPressed: () => handlePressSendMessage(context),
-            child: Text(
-              'Send',
-              style: TextStyle(
-                color: Theme.of(context).textTheme.button.color,
-              ),
+          decoration: BoxDecoration(
+            border: BorderDirectional(
+              top: BorderSide(color: Colors.grey, width: 1.0),
             ),
           ),
+          child: Row(
+            children: <Widget>[
+              Expanded(
+                child: Container(
+                  padding: EdgeInsets.symmetric(
+                    horizontal: 8.0,
+                  ),
+                  child: TextField(
+                    controller: _textController,
+                    decoration: InputDecoration(
+                      contentPadding: EdgeInsets.symmetric(
+                        vertical: 8.0,
+                        horizontal: 16.0,
+                      ),
+                      hintText: 'Send a message',
+                    ),
+                    onSubmitted: (_) => handlePressSendMessage(context),
+                  ),
+                ),
+              ),
+              Container(
+                margin: EdgeInsets.only(
+                  right: 8.0,
+                ),
+                child: RaisedButton(
+                  color: Theme.of(context).primaryColor,
+                  onPressed: () => handlePressSendMessage(context),
+                  child: Text(
+                    'Send',
+                    style: TextStyle(
+                      color: Theme.of(context).textTheme.button.color,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
         ),
+        profileOverlay(context),
       ],
     );
   }
 
   Widget profileOverlay(BuildContext context) {
-    if (User().userData != null) {
-      return Container();
-    }
-    return Column(
-      children: <Widget>[
-        Container(
-          color: Colors.red,
-          child: Text('Please update profile'),
-        ),
-      ],
+//    if (User().userData != null) {
+//      return Container();
+//    }
+
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+      ),
+      padding: EdgeInsets.symmetric(
+        horizontal: 8.0,
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.max,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: <Widget>[
+          RaisedButton(
+            color: Theme.of(context).primaryColor,
+            child: Text(
+              'Please fill profile to join chat',
+              style: TextStyle(color: Theme.of(context).textTheme.button.color),
+            ),
+            onPressed: () => handlePressProfile(context),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void handlePressProfile(BuildContext context) {
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => Profile(),
+      ),
     );
   }
 
   void handlePressSendMessage(BuildContext context) {
     final String message = _textController.value.text;
 
-    if (User().userData == null) {
+    if (true) {
       Navigator.of(context).push(MaterialPageRoute(builder: (_) => Profile()));
       return;
     }
@@ -98,7 +126,7 @@ class _ChatInputState extends State<ChatInput> {
   Future<void> sendMessage(String value) async {
     if (value.isEmpty) return;
 
-    Message message = Message(message: value, user: user);
+    Message message = Message(message: value);
     await thread.add(message.toMap());
 
     _textController.clear();

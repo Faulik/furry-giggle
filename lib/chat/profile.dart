@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 
 import 'package:up4/userBloc.dart';
 
@@ -9,9 +8,8 @@ class Profile extends StatefulWidget {
 }
 
 class _ProfileState extends State<Profile> {
-  final FirebaseUser user = User().user;
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
-  UserData _data;
+  UserData _data = UserData();
 
   @override
   void initState() {
@@ -28,58 +26,71 @@ class _ProfileState extends State<Profile> {
       appBar: AppBar(
         title: Text('Profile'),
       ),
-      body: Form(
-        key: _formKey,
-        child: Expanded(
-          child: Center(
-            child: Column(
-              children: <Widget>[
-                TextFormField(
-                  decoration: InputDecoration(
-                    helperText: 'Your name',
-                    labelText: 'Name',
-                  ),
-                  validator: (String value) {
-                    if (value.length == 0) {
-                      return 'Required';
-                    }
-                  },
-                  onSaved: (String value) => this._data.name = value,
+      body: Column(
+        children: <Widget>[
+          Form(
+            key: _formKey,
+            child: Expanded(
+              child: Container(
+                padding: EdgeInsets.symmetric(
+                  horizontal: 16.0,
                 ),
-                TextFormField(
-                  decoration: InputDecoration(
-                    helperText: 'Your email',
-                    labelText: 'Email',
-                  ),
-                  validator: (String value) {
-                    if (value.length == 0) {
-                      return 'Required';
-                    }
-                  },
-                  onSaved: (String value) => this._data.email = value,
+                child: Column(
+                  children: <Widget>[
+                    TextFormField(
+                      decoration: InputDecoration(
+                        helperText: 'Your name',
+                        labelText: 'Name',
+                      ),
+                      validator: (String value) {
+                        if (value.length == 0) {
+                          return 'Required';
+                        }
+                      },
+                      onSaved: (String value) => this._data.name = value,
+                    ),
+                    TextFormField(
+                      keyboardType: TextInputType.emailAddress,
+                      decoration: InputDecoration(
+                        helperText: 'Your email',
+                        labelText: 'Email',
+                      ),
+                      validator: (String value) {
+                        if (value.length == 0) {
+                          return 'Required';
+                        }
+                      },
+                      onSaved: (String value) => this._data.email = value,
+                    ),
+                    Container(
+                      child: RaisedButton(
+                        color: Theme.of(context).primaryColor,
+                        child: Text('Save', style: TextStyle(color: Theme.of(context).textTheme.button.color),),
+                        onPressed: () => handleSaveProfile(context),
+                      ),
+                    )
+                  ],
                 ),
-                Container(
-                  child: RaisedButton(
-                    child: Text('Save'),
-                    onPressed: handleSaveProfile,
-                  ),
-                )
-              ],
+              ),
             ),
           ),
-        ),
+        ],
       ),
     );
   }
 
-  void handleSaveProfile() {
+  Future<void> handleSaveProfile(BuildContext context) async {
     if (this._formKey.currentState.validate()) {
       _formKey.currentState.save();
 
-      User().updateUser(
-        email: this._data.email,
-        name: this._data.name,
+      User().onUserUpdated.add(
+        UserData(
+          email: this._data.email,
+          name: this._data.name,
+        ),
       );
+
+      Navigator.of(context).pop();
     }
   }
 }

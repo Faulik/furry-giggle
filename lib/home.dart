@@ -61,6 +61,7 @@ class HomeScreen extends StatelessWidget {
 
   Future<void> handlePressStart(BuildContext context) async {
     FirebaseUser user = await FirebaseAuth.instance.currentUser();
+
     if (user == null) {
       return Navigator.of(context).pushNamed('onBoarding');
     }
