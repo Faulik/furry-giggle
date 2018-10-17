@@ -1,6 +1,8 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
+import 'package:up4/userBloc.dart';
+
 class Login extends StatefulWidget {
   @override
   _LoginState createState() => _LoginState();
@@ -15,6 +17,7 @@ class _LoginState extends State<Login> {
 
   @override
   Widget build(BuildContext context) {
+
     return Scaffold(
       appBar: AppBar(
         title: Text('Your Phone Number'),
@@ -24,9 +27,8 @@ class _LoginState extends State<Login> {
           children: <Widget>[
             Container(
               margin: EdgeInsets.all(30.0),
-              child: currentVerificationId.isEmpty
-                  ? buildPhoneInput(context)
-                  : buildPhoneCodeInput(context),
+              child:
+                  currentVerificationId.isEmpty ? phoneInput(context) : phoneCodeInput(context),
             )
           ],
         );
@@ -34,59 +36,38 @@ class _LoginState extends State<Login> {
     );
   }
 
-  Widget buildPhoneInput(BuildContext context) {
-    return Form(
-      key: _phoneFormKey,
-      autovalidate: true,
-      child: Column(
-        children: <Widget>[
-          Text(
-            'Please confirm your country code and enter your phone number',
-          ),
-          TextFormField(
-            decoration: InputDecoration(
-              labelText: 'Phone number',
-            ),
-            autovalidate: true,
-            validator: (String value) {
-              if (value.length < 13) {
-                return 'Required';
-              }
+  Widget phoneInput(BuildContext context) => Form(
+    key: _phoneFormKey,
+    autovalidate: true,
+    child: Column(
+      children: <Widget>[
+        Text('Please confirm your country code and enter your phone number'),
+        TextFormField(
+          decoration: InputDecoration(labelText: 'Phone number'),
+          autovalidate: true,
+          validator: (String value) => value.length < 13 ? 'Required' : null,
+          onFieldSubmitted: (value) => handlePhoneSubmit(value, context),
+          keyboardType: TextInputType.phone,
+        )
+      ],
+    ),
+  );
 
-              return null;
-            },
-            onFieldSubmitted: (value) => handlePhoneSubmit(value, context),
-            keyboardType: TextInputType.phone,
-          )
-        ],
-      ),
-    );
-  }
+  Widget phoneCodeInput(BuildContext context) => Form(
+    key: _phoneCodeFormKey,
+    autovalidate: true,
+    child: Column(
+      children: <Widget>[
+        Text('Please write code from sms'),
+        TextFormField(
+          validator: (String value) => value.isEmpty ? 'Required' : null,
+          onFieldSubmitted: (value) => handlePhoneCodeSubmit(value, context),
+          keyboardType: TextInputType.number,
+        ),
+      ],
+    ),
+  );
 
-  Widget buildPhoneCodeInput(BuildContext context) {
-    return Form(
-      key: _phoneCodeFormKey,
-      autovalidate: true,
-      child: Column(
-        children: <Widget>[
-          Text(
-            'Please write code from sms',
-          ),
-          TextFormField(
-            validator: (String value) {
-              if (value.isEmpty) {
-                return 'Required';
-              }
-            },
-            onFieldSubmitted: (value) {
-              handlePhoneCodeSubmit(value, context);
-            },
-            keyboardType: TextInputType.number,
-          )
-        ],
-      ),
-    );
-  }
 
   Future<void> handlePhoneCodeSubmit(String value, BuildContext context) async {
     bool isValid = _phoneCodeFormKey.currentState.validate();

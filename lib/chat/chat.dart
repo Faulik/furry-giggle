@@ -3,6 +3,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 
 import 'package:up4/chat/chatMessagesList.dart';
 import 'package:up4/chat/chatInput.dart';
+import 'package:up4/userBloc.dart';
 
 class Chat extends StatefulWidget {
   final String channelId;

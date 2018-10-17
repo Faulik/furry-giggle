@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/material.dart';
 
 import 'package:rxdart/rxdart.dart';
 
@@ -17,73 +18,135 @@ class UserData {
   });
 }
 
-class User {
+class UserInheritedData extends InheritedWidget {
+  final _UserWidgetState data;
+
+  const UserInheritedData({
+    Key key,
+    @required this.data,
+    @required Widget child,
+  })  : assert(child != null),
+        super(key: key, child: child);
+
+  static UserInheritedData of(BuildContext context) {
+    return context.inheritFromWidgetOfExactType(UserInheritedData)
+        as UserInheritedData;
+  }
+
+  @override
+  bool updateShouldNotify(UserInheritedData old) {
+    return true;
+  }
+}
+
+class UserWidget extends StatefulWidget {
+  UserWidget({
+    Key key,
+    this.child,
+  }) : super(key: key);
+
+  final Widget child;
+
+  @override
+  _UserWidgetState createState() => _UserWidgetState();
+
+  static _UserWidgetState of(BuildContext context) {
+    final widget = context.inheritFromWidgetOfExactType(UserInheritedData)
+        as UserInheritedData;
+
+    return widget.data;
+  }
+}
+
+class _UserWidgetState extends State<UserWidget> {
   FirebaseAuth auth;
 
-  final Sink<UserData> onUserUpdated;
+  PublishSubject<UserData> onUserUpdated;
 
-  final BehaviorSubject<UserData> userDataSubject;
-  final BehaviorSubject<FirebaseUser> userSubject;
+  BehaviorSubject<UserData> userDataSubject;
+  BehaviorSubject<FirebaseUser> userSubject;
 
-  factory User() {
-    final onUserUpdated = PublishSubject<UserData>();
+  @override
+  void initState() {
+    onUserUpdated = PublishSubject<UserData>();
 
-    final userSubject = BehaviorSubject<FirebaseUser>();
-    final userDataSubject = BehaviorSubject<UserData>();
+    userSubject = BehaviorSubject<FirebaseUser>();
+    userDataSubject = BehaviorSubject<UserData>();
 
     onUserUpdated
-        .withLatestFrom(userSubject, (a, b) => [a, b])
-        .withLatestFrom(userDataSubject, (a, b) => [a[0], a[1], b])
+        .withLatestFrom(userSubject, (a, b) {
+          return [a, b];
+        })
+        .withLatestFrom(userDataSubject, (a, c) {
+          return [a[0], a[1], c];
+        })
         .switchMap<UserData>(updateUser)
-        .listen(userDataSubject.add);
+        .listen((UserData data) {
+          print('kek');
+          userDataSubject.add(data);
+        });
 
-    return User._internal(onUserUpdated, userSubject, userDataSubject);
-  }
-
-  void dispose() {
-    onUserUpdated.close();
-  }
-
-  User._internal(this.onUserUpdated,
-      this.userSubject,
-      this.userDataSubject,) {
+    onUserUpdated.listen((v) => print('1$v'));
+    userSubject.listen((v) => print('2$v'));
+    userDataSubject.listen((v) => print('3$v'));
     _init();
+
+    super.initState();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return UserInheritedData(
+      data: this,
+      child: widget.child,
+    );
+  }
+
+  @override
+  void dispose() {
+    userDataSubject.close();
+    userSubject.close();
+
+    onUserUpdated.close();
+    super.dispose();
   }
 
   Future<void> _init() async {
-    auth = FirebaseAuth.instance;
+    final auth = FirebaseAuth.instance;
+    final CollectionReference users = Firestore.instance.collection('users');
 
     final user = await auth.currentUser();
 
     userSubject.add(user);
 
+    if (user == null) {
+      return;
+    }
 
-//    if (user == null) {
-//      return;
-//    }
+    final handleGetDocument = (QuerySnapshot snapshot) {
+      if (snapshot.documents.isEmpty) {
+        return null;
+      }
+      snapshot.documents.elementAt(0);
+    };
 
-//    final handleGetDocument = (QuerySnapshot snapshot) {
-//      if (snapshot.documents.isEmpty) {
-//        return null;
-//      }
-//      snapshot.documents.elementAt(0);
-//    };
-//
-//    final DocumentSnapshot userDocument = await users
-//        .where('userId', isEqualTo: user.uid)
-//        .limit(1)
-//        .getDocuments()
-//        .then(handleGetDocument);
-//
-//    if (userDocument != null) {
-//      onUserUpdated.add(
-//        UserData(
-//          email: userDocument['email'],
-//          name: userDocument['name'],
-//          id: userDocument.documentID,
-//        ),
-//      );
-//    }
+    final DocumentSnapshot userDocument = await users
+        .where('userId', isEqualTo: user.uid)
+        .limit(1)
+        .getDocuments()
+        .then(handleGetDocument);
+
+    if (userDocument != null) {
+      onUserUpdated.add(
+        UserData(
+          email: userDocument['email'],
+          name: userDocument['name'],
+          id: userDocument.documentID,
+        ),
+      );
+    } else {
+      userDataSubject.add(null);
+    }
   }
 
   // TODO: Find how to handle List<dynamic> when you know structure

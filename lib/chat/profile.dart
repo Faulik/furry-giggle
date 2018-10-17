@@ -22,6 +22,30 @@ class _ProfileState extends State<Profile> {
 
   @override
   Widget build(BuildContext context) {
+    final Widget saveButton = Container(
+      child: RaisedButton(
+        color: Theme.of(context).primaryColor,
+        child: Text(
+          'Save',
+          style: TextStyle(color: Theme.of(context).textTheme.button.color),
+        ),
+        onPressed: () => handleSaveProfile(context),
+      ),
+    );
+
+    final Widget emailInput = TextFormField(
+      keyboardType: TextInputType.emailAddress,
+      decoration: InputDecoration(helperText: 'Your email', labelText: 'Email'),
+      validator: (String value) => value.length == 0 ? 'Required' : null,
+      onSaved: (String value) => this._data.email = value,
+    );
+
+    final Widget nameInput = TextFormField(
+      decoration: InputDecoration(helperText: 'Your name', labelText: 'Name'),
+      validator: (String value) => value.length == 0 ? 'Required' : null,
+      onSaved: (String value) => this._data.name = value,
+    );
+
     return Scaffold(
       appBar: AppBar(
         title: Text('Profile'),
@@ -36,40 +60,7 @@ class _ProfileState extends State<Profile> {
                   horizontal: 16.0,
                 ),
                 child: Column(
-                  children: <Widget>[
-                    TextFormField(
-                      decoration: InputDecoration(
-                        helperText: 'Your name',
-                        labelText: 'Name',
-                      ),
-                      validator: (String value) {
-                        if (value.length == 0) {
-                          return 'Required';
-                        }
-                      },
-                      onSaved: (String value) => this._data.name = value,
-                    ),
-                    TextFormField(
-                      keyboardType: TextInputType.emailAddress,
-                      decoration: InputDecoration(
-                        helperText: 'Your email',
-                        labelText: 'Email',
-                      ),
-                      validator: (String value) {
-                        if (value.length == 0) {
-                          return 'Required';
-                        }
-                      },
-                      onSaved: (String value) => this._data.email = value,
-                    ),
-                    Container(
-                      child: RaisedButton(
-                        color: Theme.of(context).primaryColor,
-                        child: Text('Save', style: TextStyle(color: Theme.of(context).textTheme.button.color),),
-                        onPressed: () => handleSaveProfile(context),
-                      ),
-                    )
-                  ],
+                  children: <Widget>[nameInput, emailInput, saveButton],
                 ),
               ),
             ),
@@ -82,15 +73,14 @@ class _ProfileState extends State<Profile> {
   Future<void> handleSaveProfile(BuildContext context) async {
     if (this._formKey.currentState.validate()) {
       _formKey.currentState.save();
-
-      User().onUserUpdated.add(
+      UserWidget.of(context).onUserUpdated.add(
         UserData(
           email: this._data.email,
           name: this._data.name,
         ),
       );
 
-      Navigator.of(context).pop();
+//      Navigator.of(context).pop();
     }
   }
 }

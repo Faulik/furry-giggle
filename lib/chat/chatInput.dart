@@ -22,6 +22,43 @@ class _ChatInputState extends State<ChatInput> {
 
   @override
   Widget build(BuildContext context) {
+    final Widget textInput = Expanded(
+      child: Container(
+        padding: EdgeInsets.symmetric(
+          horizontal: 8.0,
+        ),
+        child: TextField(
+          controller: _textController,
+          decoration: InputDecoration(
+            contentPadding: EdgeInsets.symmetric(
+              vertical: 8.0,
+              horizontal: 16.0,
+            ),
+            hintText: 'Send a message',
+          ),
+          onSubmitted: (_) => handlePressSendMessage(context),
+        ),
+      ),
+    );
+
+    final Widget sendButton = Container(
+      margin: EdgeInsets.only(
+        right: 8.0,
+      ),
+      child: RaisedButton(
+        color: Theme.of(context).primaryColor,
+        onPressed: () => handlePressSendMessage(context),
+        child: Text(
+          'Send',
+          style: TextStyle(
+            color: Theme.of(context).textTheme.button.color,
+          ),
+        ),
+      ),
+    );
+
+    final user = UserWidget.of(context);
+
     return Stack(
       children: <Widget>[
         Container(
@@ -32,51 +69,23 @@ class _ChatInputState extends State<ChatInput> {
           ),
           child: Row(
             children: <Widget>[
-              Expanded(
-                child: Container(
-                  padding: EdgeInsets.symmetric(
-                    horizontal: 8.0,
-                  ),
-                  child: TextField(
-                    controller: _textController,
-                    decoration: InputDecoration(
-                      contentPadding: EdgeInsets.symmetric(
-                        vertical: 8.0,
-                        horizontal: 16.0,
-                      ),
-                      hintText: 'Send a message',
-                    ),
-                    onSubmitted: (_) => handlePressSendMessage(context),
-                  ),
-                ),
-              ),
-              Container(
-                margin: EdgeInsets.only(
-                  right: 8.0,
-                ),
-                child: RaisedButton(
-                  color: Theme.of(context).primaryColor,
-                  onPressed: () => handlePressSendMessage(context),
-                  child: Text(
-                    'Send',
-                    style: TextStyle(
-                      color: Theme.of(context).textTheme.button.color,
-                    ),
-                  ),
-                ),
-              ),
+              textInput,
+              sendButton,
             ],
           ),
         ),
-        profileOverlay(context),
+        StreamBuilder(
+          stream: user.userDataSubject,
+          builder: profileOverlay,
+        )
       ],
     );
   }
 
-  Widget profileOverlay(BuildContext context) {
-//    if (User().userData != null) {
-//      return Container();
-//    }
+  Widget profileOverlay(BuildContext context, AsyncSnapshot<UserData> snapshot) {
+    if (snapshot.hasData) {
+      return Container();
+    }
 
     return Container(
       decoration: BoxDecoration(
