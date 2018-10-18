@@ -80,7 +80,7 @@ class _ProfileState extends State<Profile> {
         ),
       );
 
-//      Navigator.of(context).pop();
+      Navigator.of(context).pop();
     }
   }
 }

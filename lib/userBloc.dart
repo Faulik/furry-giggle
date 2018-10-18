@@ -18,6 +18,13 @@ class UserData {
   });
 }
 
+class User {
+  UserData profile;
+  FirebaseUser auth;
+
+  User({this.profile, this.auth});
+}
+
 class UserInheritedData extends InheritedWidget {
   final _UserWidgetState data;
 
@@ -64,31 +71,31 @@ class _UserWidgetState extends State<UserWidget> {
   PublishSubject<UserData> onUserUpdated;
 
   BehaviorSubject<UserData> userDataSubject;
-  BehaviorSubject<FirebaseUser> userSubject;
+  BehaviorSubject<FirebaseUser> authUserSubject;
+
+  BehaviorSubject<User> userSubject;
 
   @override
   void initState() {
     onUserUpdated = PublishSubject<UserData>();
 
-    userSubject = BehaviorSubject<FirebaseUser>();
-    userDataSubject = BehaviorSubject<UserData>();
+    userSubject = BehaviorSubject<User>();
+    authUserSubject = BehaviorSubject<FirebaseUser>();
+    userDataSubject = BehaviorSubject<UserData>(seedValue: null);
+
+    Observable.combineLatest2(authUserSubject, userDataSubject,
+        (a, b) => User(auth: a, profile: b)).listen(userSubject.add);
 
     onUserUpdated
-        .withLatestFrom(userSubject, (a, b) {
-          return [a, b];
-        })
-        .withLatestFrom(userDataSubject, (a, c) {
-          return [a[0], a[1], c];
-        })
+        .withLatestFrom(userSubject, (a, b) => [a, b])
         .switchMap<UserData>(updateUser)
-        .listen((UserData data) {
-          print('kek');
-          userDataSubject.add(data);
-        });
+        .listen(userDataSubject.add);
 
     onUserUpdated.listen((v) => print('1$v'));
-    userSubject.listen((v) => print('2$v'));
+    authUserSubject.listen((v) => print('2$v'));
     userDataSubject.listen((v) => print('3$v'));
+    userSubject.listen((v) => print('4$v'));
+
     _init();
 
     super.initState();
@@ -105,7 +112,7 @@ class _UserWidgetState extends State<UserWidget> {
   @override
   void dispose() {
     userDataSubject.close();
-    userSubject.close();
+    authUserSubject.close();
 
     onUserUpdated.close();
     super.dispose();
@@ -117,7 +124,7 @@ class _UserWidgetState extends State<UserWidget> {
 
     final user = await auth.currentUser();
 
-    userSubject.add(user);
+    authUserSubject.add(user);
 
     if (user == null) {
       return;
@@ -127,7 +134,7 @@ class _UserWidgetState extends State<UserWidget> {
       if (snapshot.documents.isEmpty) {
         return null;
       }
-      snapshot.documents.elementAt(0);
+      return snapshot.documents.elementAt(0);
     };
 
     final DocumentSnapshot userDocument = await users
@@ -137,10 +144,11 @@ class _UserWidgetState extends State<UserWidget> {
         .then(handleGetDocument);
 
     if (userDocument != null) {
-      onUserUpdated.add(
+      userDataSubject.add(
         UserData(
-          email: userDocument['email'],
-          name: userDocument['name'],
+          userId: user.uid,
+          email: userDocument.data['email'],
+          name: userDocument.data['name'],
           id: userDocument.documentID,
         ),
       );
@@ -152,34 +160,33 @@ class _UserWidgetState extends State<UserWidget> {
   // TODO: Find how to handle List<dynamic> when you know structure
   static Stream<UserData> updateUser(args) async* {
     final UserData newUserData = args[0];
-    final FirebaseUser user = args[1];
-    final UserData userData = args[2];
+    final User user = args[1];
     final CollectionReference users = Firestore.instance.collection('users');
 
-    if (userData.id.isNotEmpty) {
-      await users.document(userData.id).setData({
-        'name': userData.name,
-        'email': userData.email,
-        'userId': user.uid,
+    if (user.profile?.id != null) {
+      await users.document(user.profile.id).setData({
+        'name': user.profile.name,
+        'email': user.profile.email,
+        'userId': user.auth.uid,
       });
 
       yield UserData(
-        userId: user.uid,
-        email: userData.email,
-        name: userData.name,
-        id: user.uid,
+        userId: user.auth.uid,
+        email: user.profile.email,
+        name: user.profile.name,
+        id: user.profile.id,
       );
     } else {
       final DocumentReference userDocument = await users.add({
         'name': newUserData.name,
         'email': newUserData.email,
-        'userId': user.uid,
+        'userId': user.auth.uid,
       });
 
       yield UserData(
-        userId: user.uid,
-        email: userData.email,
-        name: userData.name,
+        userId: user.auth.uid,
+        email: newUserData.email,
+        name: newUserData.name,
         id: userDocument.documentID,
       );
     }

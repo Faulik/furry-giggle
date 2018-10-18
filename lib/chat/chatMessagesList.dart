@@ -58,7 +58,8 @@ class _ChatMessagesListState extends State<ChatMessagesList> {
 
     if (newDocuments.isNotEmpty) {
       setState(() {
-        _messages.addAll(
+        _messages.insertAll(
+          0,
           newDocuments.map((DocumentChange change) => change.document),
         );
         for (int i = 0; i < newDocuments.length; i++) {

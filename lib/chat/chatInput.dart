@@ -11,17 +11,40 @@ class ChatInput extends StatefulWidget {
   ChatInput({this.thread});
 
   @override
-  _ChatInputState createState() => _ChatInputState();
+  _ChatInputState createState() => _ChatInputState(thread: this.thread);
 }
 
 class _ChatInputState extends State<ChatInput> {
   final TextEditingController _textController = TextEditingController();
   final CollectionReference thread;
 
-  _ChatInputState({this.thread});
+  _ChatInputState({
+    @required this.thread,
+  });
 
   @override
   Widget build(BuildContext context) {
+    final user = UserWidget.of(context);
+
+    return Stack(
+      children: <Widget>[
+        Container(
+          decoration: BoxDecoration(
+            border: BorderDirectional(
+              top: BorderSide(color: Colors.grey, width: 1.0),
+            ),
+          ),
+          child: StreamBuilder(stream: user.userSubject, builder: inputBlock),
+        ),
+        StreamBuilder(
+          stream: user.userSubject,
+          builder: profileOverlay,
+        )
+      ],
+    );
+  }
+
+  Widget inputBlock(BuildContext context, AsyncSnapshot<User> snapshot) {
     final Widget textInput = Expanded(
       child: Container(
         padding: EdgeInsets.symmetric(
@@ -36,7 +59,7 @@ class _ChatInputState extends State<ChatInput> {
             ),
             hintText: 'Send a message',
           ),
-          onSubmitted: (_) => handlePressSendMessage(context),
+          onSubmitted: (_) => handlePressSendMessage(context, snapshot),
         ),
       ),
     );
@@ -47,7 +70,9 @@ class _ChatInputState extends State<ChatInput> {
       ),
       child: RaisedButton(
         color: Theme.of(context).primaryColor,
-        onPressed: () => handlePressSendMessage(context),
+        onPressed: snapshot.hasData
+            ? () => handlePressSendMessage(context, snapshot)
+            : null,
         child: Text(
           'Send',
           style: TextStyle(
@@ -57,32 +82,15 @@ class _ChatInputState extends State<ChatInput> {
       ),
     );
 
-    final user = UserWidget.of(context);
-
-    return Stack(
+    return Row(
       children: <Widget>[
-        Container(
-          decoration: BoxDecoration(
-            border: BorderDirectional(
-              top: BorderSide(color: Colors.grey, width: 1.0),
-            ),
-          ),
-          child: Row(
-            children: <Widget>[
-              textInput,
-              sendButton,
-            ],
-          ),
-        ),
-        StreamBuilder(
-          stream: user.userDataSubject,
-          builder: profileOverlay,
-        )
+        textInput,
+        sendButton,
       ],
     );
   }
 
-  Widget profileOverlay(BuildContext context, AsyncSnapshot<UserData> snapshot) {
+  Widget profileOverlay(BuildContext context, AsyncSnapshot<User> snapshot) {
     if (snapshot.hasData) {
       return Container();
     }
@@ -119,26 +127,16 @@ class _ChatInputState extends State<ChatInput> {
     );
   }
 
-  void handlePressSendMessage(BuildContext context) {
+  Future<void> handlePressSendMessage(
+      BuildContext context, AsyncSnapshot<User> user) async {
     final String message = _textController.value.text;
 
-    if (true) {
-      Navigator.of(context).push(MaterialPageRoute(builder: (_) => Profile()));
-      return;
-    }
-
-    if (message.length > 0) {
-      sendMessage(message);
-    }
-  }
-
-  Future<void> sendMessage(String value) async {
-    if (value.isEmpty) return;
-
-    Message message = Message(message: value);
-    await thread.add(message.toMap());
+    if (message.length == 0 || message.isEmpty || !user.hasData) return;
 
     _textController.clear();
+
+    Message newMessage = Message(message: message, user: user.data);
+    await thread.add(newMessage.toMap());
   }
 
   @override
@@ -154,9 +152,9 @@ class Message {
   String senderName;
   String timestamp;
 
-  Message({this.message, FirebaseUser user}) {
-    this.senderId = user.uid;
-    this.senderName = user.displayName;
+  Message({this.message, User user}) {
+    this.senderId = user.auth.uid;
+    this.senderName = user.profile.name;
   }
 
   Map<String, dynamic> toMap() {
