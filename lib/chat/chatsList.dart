@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 import 'package:up4/chat/chat.dart';
-import 'package:up4/userBloc.dart';
 
 class ChatsList extends StatefulWidget {
   @override
@@ -32,7 +31,10 @@ class _ChatsListState extends State<ChatsList> {
     BuildContext context,
     AsyncSnapshot<QuerySnapshot> snapshot,
   ) {
-    if (!snapshot.hasData) return Text('Loading...');
+    if (!snapshot.hasData)
+      return Center(
+        child: CircularProgressIndicator(),
+      );
 
     return Expanded(
       child: ListView(
@@ -45,6 +47,7 @@ class _ChatsListState extends State<ChatsList> {
                 MaterialPageRoute(
                   builder: (_) {
                     return Chat(
+                      title: document['title'],
                       channelId: document.documentID.toString(),
                     );
                   },

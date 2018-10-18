@@ -2,10 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:up4/home.dart';
 
-import 'package:up4/onboarding.dart';
-import 'package:up4/login.dart';
+import 'package:up4/onboarding/intro.dart';
 import 'package:up4/chat/chatsList.dart';
 import 'package:up4/userBloc.dart';
+import 'package:up4/login.dart';
 
 void main() {
 //  debugPaintSizeEnabled = true;

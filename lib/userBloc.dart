@@ -113,6 +113,7 @@ class _UserWidgetState extends State<UserWidget> {
   void dispose() {
     userDataSubject.close();
     authUserSubject.close();
+    userSubject.close();
 
     onUserUpdated.close();
     super.dispose();
