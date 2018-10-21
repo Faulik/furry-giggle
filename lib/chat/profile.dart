@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import 'package:up4/userBloc.dart';
+import 'package:up4/services/userBloc.dart';
 
 class Profile extends StatefulWidget {
   @override

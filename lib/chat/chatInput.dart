@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 import 'package:up4/chat/profile.dart';
-import 'package:up4/userBloc.dart';
+import 'package:up4/services/userBloc.dart';
 
 class ChatInput extends StatefulWidget {
   final CollectionReference thread;

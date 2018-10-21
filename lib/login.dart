@@ -1,19 +1,26 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
-import 'package:up4/userBloc.dart';
+import 'package:up4/services/userBloc.dart';
 
 class Login extends StatefulWidget {
+  final String backRoute;
+
+  Login({this.backRoute});
+
   @override
-  _LoginState createState() => _LoginState();
+  _LoginState createState() => _LoginState(backRoute: backRoute);
 }
 
 class _LoginState extends State<Login> {
+  String backRoute;
   final _phoneFormKey = GlobalKey<FormState>();
   final _phoneCodeFormKey = GlobalKey<FormState>();
   FirebaseAuth auth = FirebaseAuth.instance;
 
   String currentVerificationId = "";
+
+  _LoginState({this.backRoute});
 
   @override
   Widget build(BuildContext context) {
@@ -27,9 +34,8 @@ class _LoginState extends State<Login> {
             Container(
               margin: EdgeInsets.all(30.0),
               child: Builder(
-                builder: currentVerificationId.isEmpty
-                    ? phoneInput
-                    : phoneCodeInput,
+                builder:
+                    currentVerificationId.isEmpty ? phoneInput : phoneCodeInput,
               ),
             )
           ],
@@ -86,7 +92,11 @@ class _LoginState extends State<Login> {
 
       if (authUser != null) {
         user.authUserSubject.add(authUser);
-        Navigator.of(context).pop();
+        if (backRoute.isNotEmpty) {
+          Navigator.of(context).popAndPushNamed(backRoute);
+        } else {
+          Navigator.of(context).pop();
+        }
       }
     }
   }

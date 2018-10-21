@@ -2,9 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:up4/home.dart';
 
+import 'package:up4/onboarding/activities.dart';
 import 'package:up4/onboarding/intro.dart';
+import 'package:up4/services/userBloc.dart';
 import 'package:up4/chat/chatsList.dart';
-import 'package:up4/userBloc.dart';
 import 'package:up4/login.dart';
 
 void main() {
@@ -16,7 +17,6 @@ void main() {
 class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    // TODO: find what was that thing about access to Navigator
     return UserWidget(
       child: MaterialApp(
         title: 'Flutter Demo',
@@ -30,15 +30,10 @@ class MyApp extends StatelessWidget {
         ),
         home: HomeScreen(),
         routes: <String, WidgetBuilder>{
-          'login': (_) {
-            return Login();
-          },
-          'onBoarding': (_) {
-            return OnBoarding();
-          },
-          'chats': (_) {
-            return ChatsList();
-          },
+          'login': (_) =>  Login(),
+          'onBoarding': (_) => OnBoarding(),
+          'activities': (_) => Activities(),
+          'chats': (_) => ChatsList(),
         },
       ),
     );

@@ -4,16 +4,33 @@ import 'package:flutter/material.dart';
 
 import 'package:rxdart/rxdart.dart';
 
+class UserActivity {
+  List<String> activities;
+  String time;
+  String place;
+
+  UserActivity({
+    this.activities,
+    this.place,
+    this.time,
+  });
+}
+
 class UserData {
+  UserActivity everyoneActivities;
+  UserActivity friendsActivities;
+
   String userId;
   String email;
   String name;
   String id;
 
   UserData({
-    this.userId,
+    this.everyoneActivities,
+    this.friendsActivities,
     this.email,
     this.name,
+    this.userId,
     this.id,
   });
 }
@@ -66,8 +83,6 @@ class UserWidget extends StatefulWidget {
 }
 
 class _UserWidgetState extends State<UserWidget> {
-  FirebaseAuth auth;
-
   PublishSubject<UserData> onUserUpdated;
 
   BehaviorSubject<UserData> userDataSubject;
@@ -81,7 +96,13 @@ class _UserWidgetState extends State<UserWidget> {
 
     userSubject = BehaviorSubject<User>();
     authUserSubject = BehaviorSubject<FirebaseUser>();
-    userDataSubject = BehaviorSubject<UserData>(seedValue: null);
+    userDataSubject = BehaviorSubject<UserData>();
+
+    authUserSubject.listen((FirebaseUser user) {
+      if(user == null) {
+        userDataSubject.add(null);
+      }
+    });
 
     Observable.combineLatest2(authUserSubject, userDataSubject,
         (a, b) => User(auth: a, profile: b)).listen(userSubject.add);
@@ -96,7 +117,7 @@ class _UserWidgetState extends State<UserWidget> {
     userDataSubject.listen((v) => print('3$v'));
     userSubject.listen((v) => print('4$v'));
 
-    _init();
+    _loadUser();
 
     super.initState();
   }
@@ -119,7 +140,7 @@ class _UserWidgetState extends State<UserWidget> {
     super.dispose();
   }
 
-  Future<void> _init() async {
+  Future<void> _loadUser() async {
     final auth = FirebaseAuth.instance;
     final CollectionReference users = Firestore.instance.collection('users');
 
@@ -158,7 +179,7 @@ class _UserWidgetState extends State<UserWidget> {
     }
   }
 
-  // TODO: Find how to handle List<dynamic> when you know structure
+  // TODO: Find how to handle List<dynamic> when you know array structure
   static Stream<UserData> updateUser(args) async* {
     final UserData newUserData = args[0];
     final User user = args[1];
@@ -191,5 +212,10 @@ class _UserWidgetState extends State<UserWidget> {
         id: userDocument.documentID,
       );
     }
+  }
+
+  Future<void> logout() async {
+    await FirebaseAuth.instance.signOut();
+    authUserSubject.add(null);
   }
 }

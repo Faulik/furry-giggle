@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'dart:async';
 
 import 'package:up4/chat/chatMessage.dart';
-import 'package:up4/userBloc.dart';
+import 'package:up4/services/userBloc.dart';
 
 class ChatMessagesList extends StatefulWidget {
   final AsyncSnapshot<User> user;
@@ -13,27 +13,23 @@ class ChatMessagesList extends StatefulWidget {
 
   @override
   _ChatMessagesListState createState() =>
-      _ChatMessagesListState(channelId: channelId, user: user);
+      _ChatMessagesListState();
 }
 
 class _ChatMessagesListState extends State<ChatMessagesList> {
-  final AsyncSnapshot<User> user;
-  final String channelId;
   final _animateListKey = new GlobalKey<AnimatedListState>();
   CollectionReference thread;
   List<DocumentSnapshot> _messages = [];
   StreamSubscription<QuerySnapshot> _streamSubscription;
 
-  _ChatMessagesListState({this.channelId, this.user}) {
-    thread = Firestore.instance
-        .collection('channels')
-        .document(channelId)
-        .collection('thread');
-  }
-
   @override
   void initState() {
     super.initState();
+
+    thread = Firestore.instance
+        .collection('channels')
+        .document(widget.channelId)
+        .collection('thread');
 
     _init();
   }
@@ -45,7 +41,8 @@ class _ChatMessagesListState extends State<ChatMessagesList> {
 
   @override
   Widget build(BuildContext context) {
-    if (thread == null || !user.hasData) return Center(child: CircularProgressIndicator());
+
+    if (thread == null || !widget.user.hasData) return Center(child: CircularProgressIndicator());
 
     if (_messages.length == 0) {
       return Center(
@@ -69,7 +66,7 @@ class _ChatMessagesListState extends State<ChatMessagesList> {
           axis: Axis.vertical,
           sizeFactor: animation,
           child: ChatMessage(
-            isFromUser: user.data.auth.uid == message['senderId'],
+            isFromUser: widget.user.data.auth.uid == message['senderId'],
             key: Key(message.documentID),
             message: message['message'],
             sender: message['senderName'],

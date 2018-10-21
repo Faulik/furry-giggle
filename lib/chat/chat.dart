@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 
 import 'package:up4/chat/chatMessagesList.dart';
 import 'package:up4/chat/chatInput.dart';
-import 'package:up4/userBloc.dart';
+import 'package:up4/services/userBloc.dart';
 
 class Chat extends StatefulWidget {
   final String channelId;
@@ -13,18 +13,20 @@ class Chat extends StatefulWidget {
 
   @override
   _ChatState createState() =>
-      _ChatState(channelId: this.channelId, title: this.title);
+      _ChatState();
 }
 
 class _ChatState extends State<Chat> {
-  final String channelId;
-  final String title;
   CollectionReference thread;
 
-  _ChatState({this.channelId, this.title}) {
+
+  @override
+  void initState() {
+    super.initState();
+
     thread = Firestore.instance
         .collection('channels')
-        .document(channelId)
+        .document(widget.channelId)
         .collection('thread');
   }
 
@@ -35,7 +37,19 @@ class _ChatState extends State<Chat> {
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Theme.of(context).primaryColor,
-        title: Text(title),
+        title: Text(widget.title),
+        actions: <Widget>[
+          IconButton(
+            onPressed: () {
+              user.logout();
+              Navigator.of(context).popAndPushNamed('login');
+            },
+            icon: Icon(
+              Icons.input,
+              color: Colors.white,
+            ),
+          )
+        ],
       ),
       body: Column(
         children: <Widget>[
@@ -43,7 +57,7 @@ class _ChatState extends State<Chat> {
             child: StreamBuilder(
               stream: user.userSubject,
               builder: (BuildContext context, AsyncSnapshot<User> user) =>
-                  ChatMessagesList(channelId: channelId, user: user),
+                  ChatMessagesList(channelId: widget.channelId, user: user),
             ),
           ),
           Container(

@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:up4/login.dart';
+import 'package:up4/services/userBloc.dart';
 
 class OnBoarding extends StatefulWidget {
   @override
@@ -25,38 +27,56 @@ class _OnBoardingState extends State<OnBoarding> {
     super.dispose();
   }
 
+  Widget buildBody(BuildContext context, AsyncSnapshot<User> user) {
+    return Container(
+      margin: EdgeInsets.symmetric(vertical: 40.0),
+      child: FractionallySizedBox(
+        widthFactor: 0.8,
+        child: RaisedButton(
+          padding: EdgeInsets.symmetric(
+            vertical: 20.0,
+          ),
+          color: Theme.of(context).primaryColor,
+          onPressed: () {
+            if (currentSlide == 2) {
+              if (user.data.auth == null) {
+                Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (BuildContext context) => Login(
+                          backRoute: 'activities',
+                        ),
+                  ),
+                );
+              } else {
+                Navigator.of(context).pushReplacementNamed('activities');
+              }
+            } else {
+              controller.nextPage(
+                duration: Duration(milliseconds: 300),
+                curve: Curves.easeIn,
+              );
+            }
+          },
+          child: Text(
+            'Next',
+            style: TextStyle(
+              color: Theme.of(context).textTheme.button.color,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: Column(
         children: <Widget>[
           buildSlider(),
-          Container(
-            margin: EdgeInsets.symmetric(vertical: 40.0),
-            child: FractionallySizedBox(
-              widthFactor: 0.8,
-              child: RaisedButton(
-                padding: EdgeInsets.symmetric(
-                  vertical: 20.0,
-                ),
-                color: Theme.of(context).primaryColor,
-                onPressed: () {
-                  if (currentSlide == 2) {
-                    Navigator.of(context).pushReplacementNamed('login');
-                  }
-                  controller.nextPage(
-                    duration: Duration(milliseconds: 300),
-                    curve: Curves.easeIn,
-                  );
-                },
-                child: Text(
-                  'Next',
-                  style: TextStyle(
-                    color: Theme.of(context).textTheme.button.color,
-                  ),
-                ),
-              ),
-            ),
+          StreamBuilder(
+            stream: UserWidget.of(context).userSubject,
+            builder: buildBody,
           ),
         ],
       ),
@@ -69,9 +89,9 @@ class _OnBoardingState extends State<OnBoarding> {
         mainAxisAlignment: MainAxisAlignment.center,
         children: <Widget>[
           Container(
-            child: new SizedBox(
+            child: SizedBox(
               height: 300.0,
-              child: new PageView(
+              child: PageView(
                 onPageChanged: (value) {
                   setState(() {
                     currentSlide = value;

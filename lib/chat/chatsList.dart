@@ -1,7 +1,7 @@
-import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-
+import 'package:flutter/material.dart';
 import 'package:up4/chat/chat.dart';
+import 'package:up4/services/userBloc.dart';
 
 class ChatsList extends StatefulWidget {
   @override
@@ -11,10 +11,24 @@ class ChatsList extends StatefulWidget {
 class _ChatsListState extends State<ChatsList> {
   @override
   Widget build(BuildContext context) {
+    final user = UserWidget.of(context);
+
     return Scaffold(
       appBar: AppBar(
         leading: Container(),
         title: Text('Chats'),
+        actions: <Widget>[
+          IconButton(
+            onPressed: () {
+              user.logout();
+              Navigator.of(context).popAndPushNamed('login');
+            },
+            icon: Icon(
+              Icons.input,
+              color: Colors.white,
+            ),
+          )
+        ],
       ),
       body: Column(
         children: <Widget>[
